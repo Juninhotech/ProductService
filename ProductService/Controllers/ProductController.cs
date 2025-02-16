@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProductService.Data;
 using ProductService.Models;
@@ -19,6 +20,7 @@ namespace ProductService.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateOrder(int userId, string productName)
         {
             var user = await _httpClient.GetFromJsonAsync<User>($"https://localhost:7272/api/users/{userId}");
@@ -28,6 +30,17 @@ namespace ProductService.Controllers
             _context.Products.Add(product   );
             await _context.SaveChangesAsync();
 
+            return Ok(product);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetProduct(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
             return Ok(product);
         }
     }
